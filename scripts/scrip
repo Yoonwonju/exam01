@@ -1,0 +1,106 @@
+select user from dual;
+
+
+
+
+drop view vw_sale;
+
+-- 1. 테이블 생성
+drop table member_tbl;
+create table member_tbl(
+    custno     number(6) not null,
+    custname varchar2(20),
+    phone     varchar2(13),
+    address   varchar2(60),
+    joindate  date,
+    grade     char(1),
+    city        char(2),
+    primary key (custno)
+);
+
+select custno, custname, phone, address, joindate, grade, city from member_tbl;
+
+drop sequence member_seq;
+create sequence member_seq
+    start with 100001
+    increment by 1
+    minvalue 100001;
+
+insert into member_tbl values(member_seq.nextval, '김행복', '010-1111-2222','서울 동대문구 휘경1동', '20151202', 'A', '60');
+insert into member_tbl values(member_seq.nextval, '이축복', '010-1111-3333', '서울 동대문구 휘경2동', '20151206', 'B', '01');
+insert into member_tbl values(member_seq.nextval, '장믿음', '010-1111-4444', '울릉군 울릉읍 독도1리', '20151001', 'B', '30');
+insert into member_tbl values(member_seq.nextval, '최사랑', '010-1111-5555', '울릉군 울릉읍 독도2리', '20151113', 'A', '30');
+insert into member_tbl values(member_seq.nextval, '진평화', '010-1111-6666', '제주도 제주시 외나무골', '20151225', 'B', '60');
+insert into member_tbl values(member_seq.nextval, '차공단', '010-1111-7777', '제주도 제주시 감나무골', '20151211', 'C', '60');
+
+drop table money_tbl;
+create table money_tbl(
+	custno number(6) not null,
+	salenol number(8) not null,
+	pcost number(8),
+	amount number(4),
+	price number(8),
+	pcode varchar2(4),
+	sdate date,
+	primary key(custno, salenol)
+);
+
+insert into money_tbl values(100001, 20160001, 500, 5, 2500, 'A001', '20160101');
+insert into money_tbl values(100001, 20160002, 1000, 4, 4000, 'A002', '20160101');
+insert into money_tbl values(100001, 20160003, 500, 3, 1500, 'A008', '20160101');
+insert into money_tbl values(100002, 20160004, 2000, 1, 2000, 'A004', '20160102');
+insert into money_tbl values(100002, 20160005, 500, 1, 500, 'A001', '20160103');
+insert into money_tbl values(100003, 20160006, 1500, 2, 3000, 'A003', '20160103');
+insert into money_tbl values(100004, 20160007, 500, 2, 1000, 'A001', '20160104');
+insert into money_tbl values(100004, 20160008, 300, 1, 300, 'A005', '20160104');
+insert into money_tbl values(100004, 20160009, 600, 1, 600, 'A006', '20160104');
+insert into money_tbl values(100004, 20160010, 3000, 1, 3000, 'A007', '20160106');
+
+select custno, custname, phone, address, joindate, grade, city from member_tbl;
+select custno, salenol, pcost, amount, price, pcode, sdate from money_tbl;
+
+-- MEMBER!!!!!!!!!!!!!!!!
+-- 회원 전체 정보 조회
+select custno, custname, phone, address, joindate, grade, city from MEMBER_TBL;
+
+-- 회원 정보 조회
+select custno, custname, phone, address, joindate, grade, city from MEMBER_TBL
+ where custno = 100001;
+
+--회원 정보 등록
+insert into MEMBER_TBL values(member_seq.nextval, '추가해보자', '010-1111-2222','서울 동대문구 휘경1동', '20151202', 'A', '60');
+
+-- 회원 정보 수정
+update MEMBER_TBL
+   set custname=?, phone=?, address=?, joindate=?, grade=?, city=?
+ where custno = ?;
+
+update MEMBER_TBL
+   set custname='수정해보자', phone='010-1544-7979', address='우리집', joindate=sysdate, grade='B', city='99'
+ where custno = 100007;
+
+-- 회원 정보 삭제
+delete from MEMBER_TBL where custno = 100019;
+
+-- 회원 등록시 회원번호 자동 발생
+select max(custno) + 1 from MEMBER_TBL;
+
+select custno, custname, phone, address, joindate, grade, city from MEMBER_TBL;
+select custno, salenol, pcost, amount, price, pcode, sdate from money_tbl;
+
+-- SALE!!!!!!!!!!!!!!!!!!
+-- 회원 전체 매출 조회
+select custno, custname, grade, total
+  from vw_sale;
+
+create view vw_sale as
+select a.custno, custname, grade, total
+  from MEMBER_TBL a join 
+       (select custno, sum(price) as total 
+		  from MONEY_TBL 
+	   	 group by custno) b 
+	   on a.custno = b.custno
+  order by total desc;
+
+
+  
